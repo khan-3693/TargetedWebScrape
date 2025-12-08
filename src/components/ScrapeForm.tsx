@@ -47,20 +47,20 @@ export function ScrapeForm({ onScrapeComplete }: ScrapeFormProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 p-6 hover:shadow-2xl transition-all duration-300">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+        <div className="p-3 bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 rounded-xl shadow-lg transform hover:rotate-12 transition-transform duration-300">
           <Search className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">AI Research Tool</h2>
-          <p className="text-sm text-gray-500">Generate historical origins and future trends analysis</p>
+          <h2 className="text-xl font-bold text-gray-900">AI Research Tool</h2>
+          <p className="text-sm text-gray-600 font-medium">Generate historical origins and future trends analysis</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="transform hover:scale-[1.02] transition-transform duration-200">
+          <label htmlFor="url" className="block text-sm font-bold text-gray-800 mb-2">
             Website URL
           </label>
           <input
@@ -71,12 +71,12 @@ export function ScrapeForm({ onScrapeComplete }: ScrapeFormProps) {
             placeholder="https://example.com"
             required
             disabled={isLoading}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:bg-gray-50 disabled:text-gray-500"
+            className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:text-gray-500 font-medium shadow-sm hover:shadow-md"
           />
         </div>
 
-        <div>
-          <label htmlFor="keyword" className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="transform hover:scale-[1.02] transition-transform duration-200">
+          <label htmlFor="keyword" className="block text-sm font-bold text-gray-800 mb-2">
             Keyword or Phrase
           </label>
           <input
@@ -87,36 +87,36 @@ export function ScrapeForm({ onScrapeComplete }: ScrapeFormProps) {
             placeholder="e.g., artificial intelligence, blockchain, etc."
             required
             disabled={isLoading}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:bg-gray-50 disabled:text-gray-500"
+            className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all disabled:bg-gray-100 disabled:text-gray-500 font-medium shadow-sm hover:shadow-md"
           />
         </div>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="p-4 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-300 rounded-xl animate-shake shadow-lg">
+            <p className="text-sm font-semibold text-red-800">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-800">{success}</p>
+          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl animate-bounce-in shadow-lg">
+            <p className="text-sm font-semibold text-green-800">{success}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={isLoading || !url || !keyword}
-          className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-medium py-3 px-6 rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 text-white font-bold py-4 px-6 rounded-xl hover:from-blue-700 hover:via-cyan-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Analyzing...
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span className="text-lg">Analyzing...</span>
             </>
           ) : (
             <>
-              <Search className="w-5 h-5" />
-              Generate Analysis
+              <Search className="w-6 h-6" />
+              <span className="text-lg">Generate Analysis</span>
             </>
           )}
         </button>

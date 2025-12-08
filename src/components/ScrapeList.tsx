@@ -11,11 +11,11 @@ export function ScrapeList({ scrapes, onSelectScrape, selectedScrapeId }: Scrape
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+        return <CheckCircle2 className="w-6 h-6 text-green-500" />;
       case 'failed':
-        return <XCircle className="w-5 h-5 text-red-500" />;
+        return <XCircle className="w-6 h-6 text-red-500" />;
       case 'pending':
-        return <Clock className="w-5 h-5 text-yellow-500 animate-pulse" />;
+        return <Clock className="w-6 h-6 text-yellow-500 animate-pulse" />;
       default:
         return null;
     }
@@ -23,14 +23,14 @@ export function ScrapeList({ scrapes, onSelectScrape, selectedScrapeId }: Scrape
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      completed: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-      pending: 'bg-yellow-100 text-yellow-800',
+      completed: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg',
+      failed: 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg',
+      pending: 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg animate-pulse',
     };
 
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${styles[status as keyof typeof styles]}`}>
-        {status}
+      <span className={`px-3 py-1 text-xs font-bold rounded-full ${styles[status as keyof typeof styles]}`}>
+        {status.toUpperCase()}
       </span>
     );
   };
@@ -48,19 +48,22 @@ export function ScrapeList({ scrapes, onSelectScrape, selectedScrapeId }: Scrape
 
   if (scrapes.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-        <Globe className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No research yet</h3>
-        <p className="text-gray-500">Start by entering a URL and keyword above to generate your first analysis</p>
+      <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 p-16 text-center">
+        <div className="relative inline-block mb-6">
+          <Globe className="w-20 h-20 text-gray-300 mx-auto" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-xl"></div>
+        </div>
+        <h3 className="text-2xl font-bold text-gray-900 mb-3">No research yet</h3>
+        <p className="text-gray-600 font-medium">Start by entering a URL and keyword above to generate your first analysis</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">Research History</h3>
-        <p className="text-sm text-gray-500 mt-1">{scrapes.length} total analyses</p>
+    <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/50 overflow-hidden hover:shadow-2xl transition-all duration-300">
+      <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 via-cyan-50 to-blue-50">
+        <h3 className="text-xl font-bold text-gray-900">Research History</h3>
+        <p className="text-sm text-gray-600 mt-1 font-medium">{scrapes.length} total analyses</p>
       </div>
 
       <div className="divide-y divide-gray-200">
@@ -68,36 +71,38 @@ export function ScrapeList({ scrapes, onSelectScrape, selectedScrapeId }: Scrape
           <button
             key={scrape.id}
             onClick={() => onSelectScrape(scrape)}
-            className={`w-full px-6 py-4 hover:bg-gray-50 transition-colors text-left ${
-              selectedScrapeId === scrape.id ? 'bg-blue-50' : ''
+            className={`w-full px-6 py-5 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 transition-all duration-300 text-left transform hover:scale-[1.01] ${
+              selectedScrapeId === scrape.id ? 'bg-gradient-to-r from-blue-100 to-cyan-100 shadow-inner' : ''
             }`}
           >
             <div className="flex items-start gap-4">
-              <div className="mt-0.5">{getStatusIcon(scrape.status)}</div>
+              <div className="mt-1">{getStatusIcon(scrape.status)}</div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium text-gray-900 truncate">
+                <div className="flex items-center gap-3 mb-2">
+                  <h4 className="font-bold text-gray-900 truncate text-lg">
                     {scrape.title || 'Untitled'}
                   </h4>
                   {getStatusBadge(scrape.status)}
                 </div>
 
                 {scrape.keyword && (
-                  <div className="flex items-center gap-2 text-sm font-medium text-blue-600 mb-1">
-                    <span className="bg-blue-50 px-2 py-0.5 rounded-full">{scrape.keyword}</span>
+                  <div className="flex items-center gap-2 text-sm font-bold mb-2">
+                    <span className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-3 py-1 rounded-full shadow-md">
+                      {scrape.keyword}
+                    </span>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-gray-700 mb-2">
                   <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate">{scrape.url}</span>
+                  <span className="truncate font-medium">{scrape.url}</span>
                 </div>
 
-                <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                <div className="flex items-center gap-4 mt-2 text-xs text-gray-600 font-medium">
                   <span>{formatDate(scrape.created_at)}</span>
                   {scrape.error && (
-                    <span className="text-red-600 truncate">Error: {scrape.error}</span>
+                    <span className="text-red-600 font-bold truncate">Error: {scrape.error}</span>
                   )}
                 </div>
               </div>
