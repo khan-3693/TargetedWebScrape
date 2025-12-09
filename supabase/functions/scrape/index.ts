@@ -9,6 +9,7 @@ const corsHeaders = {
 interface ScrapeRequest {
   url: string;
   keyword: string;
+  userId?: string;
 }
 
 Deno.serve(async (req: Request) => {
@@ -26,7 +27,7 @@ Deno.serve(async (req: Request) => {
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { url, keyword }: ScrapeRequest = await req.json();
+    const { url, keyword, userId }: ScrapeRequest = await req.json();
 
     if (!url || !keyword) {
       return new Response(
@@ -48,7 +49,6 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Validate URL format
     let validUrl: URL;
     try {
       validUrl = new URL(url);
@@ -65,10 +65,14 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Create a scrape record with pending status
+    const insertData: any = { url, keyword, status: 'pending' };
+    if (userId) {
+      insertData.user_id = userId;
+    }
+
     const { data: scrapeRecord, error: insertError } = await supabase
       .from('scrapes')
-      .insert({ url, keyword, status: 'pending' })
+      .insert(insertData)
       .select()
       .single();
 
@@ -83,7 +87,6 @@ Deno.serve(async (req: Request) => {
     }
 
     try {
-      // Step 1: Scrape website using Firecrawl API
       const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
         method: 'POST',
         headers: {
@@ -108,7 +111,6 @@ Deno.serve(async (req: Request) => {
         throw new Error('No content extracted from website');
       }
 
-      // Step 2: Generate URL Summary using OpenAI
       const summaryPrompt = `You are a research analyst. Based on the following website content, provide a concise and comprehensive summary of what this webpage is trying to convey about "${keyword}".
 
 Website Content:
@@ -146,7 +148,6 @@ Write in a clear, professional tone suitable for business discussions.`;
       const summaryData = await summaryResponse.json();
       const urlSummary = summaryData.choices[0]?.message?.content || 'Summary not available';
 
-      // Step 3: Generate structured Origin Analysis with search queries
       const originPrompt = `You are a research analyst. Based on the website content about "${keyword}", identify key points about its ORIGIN and HISTORY.
 
 Website Content:
@@ -203,7 +204,6 @@ Focus on: earliest mentions, verified origins, historical context, key milestone
         originPoints = [];
       }
 
-      // Step 4: Generate structured Trends Analysis with search queries
       const trendsPrompt = `You are a research analyst. Based on the website content about "${keyword}", identify key points about RECENT UPDATES and FUTURE TRENDS.
 
 Website Content:
@@ -260,7 +260,6 @@ Focus on: latest developments, current trends, future forecasts, emerging opport
         trendsPoints = [];
       }
 
-      // Step 5: Search for reference links using Brave Search API
       const braveApiKey = Deno.env.get('BRAVE_SEARCH_API_KEY');
 
       const searchForReferences = async (searchQuery: string) => {
@@ -292,7 +291,6 @@ Focus on: latest developments, current trends, future forecasts, emerging opport
         }
       };
 
-      // Add references to origin points
       const originWithRefs = await Promise.all(
         originPoints.map(async (point: any) => {
           const refs = await searchForReferences(point.searchQuery || '');
@@ -303,7 +301,6 @@ Focus on: latest developments, current trends, future forecasts, emerging opport
         })
       );
 
-      // Add references to trends points
       const trendsWithRefs = await Promise.all(
         trendsPoints.map(async (point: any) => {
           const refs = await searchForReferences(point.searchQuery || '');
@@ -317,7 +314,79 @@ Focus on: latest developments, current trends, future forecasts, emerging opport
       const originAnalysis = JSON.stringify(originWithRefs);
       const trendsAnalysis = JSON.stringify(trendsWithRefs);
 
-      // Step 6: Update the scrape record with all results
+      const socialMediaPrompt = `You are a creative social media content writer. Based on the Origin Analysis and Trends Analysis provided, generate 6 social media posts total.
+
+Origin Analysis:
+${originAnalysis}
+
+Trends Analysis:
+${trendsAnalysis}
+
+Keyword: "${keyword}"
+
+Generate a JSON object with the following structure:
+{
+  "comedic": [
+    {"id": "1", "content": "post content here", "category": "comedic"},
+    {"id": "2", "content": "post content here", "category": "comedic"},
+    {"id": "3", "content": "post content here", "category": "comedic"}
+  ],
+  "serious": [
+    {"id": "4", "content": "post content here", "category": "serious"},
+    {"id": "5", "content": "post content here", "category": "serious"},
+    {"id": "6", "content": "post content here", "category": "serious"}
+  ]
+}
+
+Requirements:
+
+COMEDIC POSTS (3 posts):
+- Write in the style of a "Current Best Comedian" - fun, humorous, lots of laughter
+- Use jokes, puns, and lighthearted observations
+- Reference key ideas from both Origin Analysis and Trends & Forecast
+- Keep each post 1-3 short paragraphs suitable for social media
+- Make people laugh while being informative
+
+SERIOUS/CONTROVERSIAL POSTS (3 posts):
+- Write in a serious, slightly provocative tone (but still professional)
+- Highlight risks, debates, or strong opinions
+- Challenge conventional thinking
+- Reference insights from both analyses
+- Keep each post 1-3 short paragraphs suitable for social media
+- Maintain professionalism while being thought-provoking`;
+
+      const socialMediaResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are an expert social media content creator. Always respond with valid JSON only.' },
+            { role: 'user', content: socialMediaPrompt },
+          ],
+          temperature: 0.9,
+          max_tokens: 2000,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      let socialMediaPosts = JSON.stringify({ comedic: [], serious: [] });
+      if (socialMediaResponse.ok) {
+        try {
+          const socialMediaData = await socialMediaResponse.json();
+          const content = socialMediaData.choices[0]?.message?.content || '{}';
+          const parsed = JSON.parse(content);
+          if (parsed.comedic && parsed.serious) {
+            socialMediaPosts = JSON.stringify(parsed);
+          }
+        } catch (e) {
+          console.error('Error parsing social media posts:', e);
+        }
+      }
+
       await supabase
         .from('scrapes')
         .update({
@@ -327,6 +396,7 @@ Focus on: latest developments, current trends, future forecasts, emerging opport
           url_summary: urlSummary,
           origin_analysis: originAnalysis,
           trends_analysis: trendsAnalysis,
+          social_media_posts: socialMediaPosts,
           reference_links: JSON.stringify([url]),
           completed_at: new Date().toISOString(),
         })
@@ -344,7 +414,6 @@ Focus on: latest developments, current trends, future forecasts, emerging opport
         }
       );
     } catch (scrapeError) {
-      // Update the scrape record with failure
       await supabase
         .from('scrapes')
         .update({

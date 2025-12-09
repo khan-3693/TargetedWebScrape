@@ -7,6 +7,17 @@ export interface AnalysisPoint {
   }>;
 }
 
+export interface SocialMediaPost {
+  id: string;
+  content: string;
+  category: 'comedic' | 'serious';
+}
+
+export interface SocialMediaPosts {
+  comedic: SocialMediaPost[];
+  serious: SocialMediaPost[];
+}
+
 export interface Scrape {
   id: string;
   url: string;
@@ -18,8 +29,10 @@ export interface Scrape {
   url_summary: string | null;
   origin_analysis: string | null;
   trends_analysis: string | null;
+  social_media_posts: string | null;
   reference_links: any;
   error: string | null;
   created_at: string;
   completed_at: string | null;
+  user_id: string | null;
 }

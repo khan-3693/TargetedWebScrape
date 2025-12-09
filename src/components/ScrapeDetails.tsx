@@ -1,6 +1,8 @@
-import { X, ExternalLink, Calendar, Clock, History, TrendingUp, Sparkles, FileText, Link, Download } from 'lucide-react';
-import { Scrape, AnalysisPoint } from '../types/scrape';
+import { X, ExternalLink, Calendar, Clock, History, TrendingUp, Sparkles, FileText, Link, Download, Share2 } from 'lucide-react';
+import { Scrape, AnalysisPoint, SocialMediaPosts as SocialMediaPostsType } from '../types/scrape';
 import { exportToTXT, exportToJSON, exportToDOC, exportToPDF } from '../utils/exportUtils';
+import { SocialMediaPosts } from './SocialMediaPosts';
+import { useState } from 'react';
 
 interface ScrapeDetailsProps {
   scrape: Scrape;
@@ -8,6 +10,7 @@ interface ScrapeDetailsProps {
 }
 
 export function ScrapeDetails({ scrape, onClose }: ScrapeDetailsProps) {
+  const [activeSection, setActiveSection] = useState<'analysis' | 'social'>('analysis');
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
@@ -24,6 +27,21 @@ export function ScrapeDetails({ scrape, onClose }: ScrapeDetailsProps) {
 
   const originPoints = parseAnalysis(scrape.origin_analysis);
   const trendsPoints = parseAnalysis(scrape.trends_analysis);
+
+  const parseSocialMediaPosts = (postsString: string | null): SocialMediaPostsType => {
+    if (!postsString) return { comedic: [], serious: [] };
+    try {
+      const parsed = JSON.parse(postsString);
+      return {
+        comedic: Array.isArray(parsed.comedic) ? parsed.comedic : [],
+        serious: Array.isArray(parsed.serious) ? parsed.serious : [],
+      };
+    } catch (e) {
+      return { comedic: [], serious: [] };
+    }
+  };
+
+  const socialMediaPosts = parseSocialMediaPosts(scrape.social_media_posts);
 
   const handleExport = (format: 'txt' | 'doc' | 'pdf' | 'json') => {
     switch (format) {
@@ -75,6 +93,41 @@ export function ScrapeDetails({ scrape, onClose }: ScrapeDetailsProps) {
           </button>
         </div>
 
+        <div className="flex gap-4 px-6 pt-4 border-b border-gray-200">
+          <button
+            onClick={() => setActiveSection('analysis')}
+            className={`px-6 py-3 font-semibold transition-all relative ${
+              activeSection === 'analysis'
+                ? 'text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Analysis
+            </div>
+            {activeSection === 'analysis' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveSection('social')}
+            className={`px-6 py-3 font-semibold transition-all relative ${
+              activeSection === 'social'
+                ? 'text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Share2 className="w-5 h-5" />
+              Social Media Posts
+            </div>
+            {activeSection === 'social' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+            )}
+          </button>
+        </div>
+
         <div className="p-6 overflow-y-auto flex-1">
           {scrape.error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -91,7 +144,7 @@ export function ScrapeDetails({ scrape, onClose }: ScrapeDetailsProps) {
             </div>
           )}
 
-          {scrape.status === 'completed' && (
+          {scrape.status === 'completed' && activeSection === 'analysis' && (
             <div className="space-y-6">
               {scrape.url_summary && (
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
@@ -231,6 +284,10 @@ export function ScrapeDetails({ scrape, onClose }: ScrapeDetailsProps) {
                 </div>
               </div>
             </div>
+          )}
+
+          {scrape.status === 'completed' && activeSection === 'social' && (
+            <SocialMediaPosts posts={socialMediaPosts} />
           )}
         </div>
 

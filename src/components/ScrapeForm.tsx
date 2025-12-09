@@ -3,9 +3,10 @@ import { Search, Loader2 } from 'lucide-react';
 
 interface ScrapeFormProps {
   onScrapeComplete: () => void;
+  userId: string;
 }
 
-export function ScrapeForm({ onScrapeComplete }: ScrapeFormProps) {
+export function ScrapeForm({ onScrapeComplete, userId }: ScrapeFormProps) {
   const [url, setUrl] = useState('');
   const [keyword, setKeyword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,7 @@ export function ScrapeForm({ onScrapeComplete }: ScrapeFormProps) {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url, keyword }),
+        body: JSON.stringify({ url, keyword, userId }),
       });
 
       const data = await response.json();
@@ -47,14 +48,14 @@ export function ScrapeForm({ onScrapeComplete }: ScrapeFormProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-xl shadow-lg border-2 border-blue-100 p-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+        <div className="p-3 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-md">
           <Search className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">AI Research Tool</h2>
-          <p className="text-sm text-gray-500">Generate historical origins and future trends analysis</p>
+          <h2 className="text-xl font-bold text-gray-900">AI Research Tool</h2>
+          <p className="text-sm text-gray-600">Generate historical origins and future trends analysis</p>
         </div>
       </div>
 
@@ -71,7 +72,7 @@ export function ScrapeForm({ onScrapeComplete }: ScrapeFormProps) {
             placeholder="https://example.com"
             required
             disabled={isLoading}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:bg-gray-50 disabled:text-gray-500"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-50 disabled:text-gray-500"
           />
         </div>
 
@@ -87,7 +88,7 @@ export function ScrapeForm({ onScrapeComplete }: ScrapeFormProps) {
             placeholder="e.g., artificial intelligence, blockchain, etc."
             required
             disabled={isLoading}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:bg-gray-50 disabled:text-gray-500"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:bg-gray-50 disabled:text-gray-500"
           />
         </div>
 
@@ -106,7 +107,7 @@ export function ScrapeForm({ onScrapeComplete }: ScrapeFormProps) {
         <button
           type="submit"
           disabled={isLoading || !url || !keyword}
-          className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-medium py-3 px-6 rounded-lg hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold py-4 px-6 rounded-xl hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
         >
           {isLoading ? (
             <>
