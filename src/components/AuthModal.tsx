@@ -16,9 +16,10 @@ export function AuthModal({ onClose }: AuthModalProps) {
     setError('');
     try {
       await signInWithGoogle();
-    } catch (err) {
-      setError('Failed to sign in with Google');
-    } finally {
+    } catch (err: any) {
+      console.error('Google sign in error:', err);
+      const errorMessage = err?.message || 'Failed to sign in with Google. Please ensure Google OAuth is configured in Supabase.';
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
@@ -28,9 +29,10 @@ export function AuthModal({ onClose }: AuthModalProps) {
     setError('');
     try {
       await signInWithGithub();
-    } catch (err) {
-      setError('Failed to sign in with GitHub');
-    } finally {
+    } catch (err: any) {
+      console.error('GitHub sign in error:', err);
+      const errorMessage = err?.message || 'Failed to sign in with GitHub. Please ensure GitHub OAuth is configured in Supabase.';
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
